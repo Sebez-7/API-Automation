@@ -1,0 +1,36 @@
+name: API Automated Testing
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 8 * * *' # Auto-run every day at 8 AM
+
+jobs:
+  test-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Newman
+        run: |
+          npm install -g newman
+          npm install -g newman-reporter-htmlextra
+
+      - name: Run API Tests
+        run: |
+          newman run "User_API_Automation.postman_collection.json" \
+          -e "Reqress_prod.postman_environment.json" \
+          -r cli,htmlextra \
+          --reporter-htmlextra-export report.html
+
+      - name: Upload Quality Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-quality-report
+          path: report.html
